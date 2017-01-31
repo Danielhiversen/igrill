@@ -52,13 +52,13 @@ class TokenCubeHandler(object):
                 dev["battery"] = float(data[sensor_index + 1])
                 sensor_index += 2
             else:
-                print "Unknown sensor", sensor, "at index", sensor_index, "data = ", [x for x in data]
+                print("Unknown sensor", sensor, "at index", sensor_index, "data = ", [x for x in data])
                 break
 
-        print "Got sensor data:", dev
+        print("Got sensor data:", dev)
 
     def persist_stats(self, persistence):
-        for addr, stats in self.devices.items():
+        for addr, stats in list(self.devices.items()):
             settings = self.device_settings.get(addr, None)
             if settings is None:
                 settings = {

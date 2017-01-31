@@ -1,10 +1,10 @@
 import os
 from bluepy.btle import Scanner
 
-from scan import DeviceForwardingDelegate
-from persistence import DataPersistence
-from igrill import IGrillHandler
-from tokencube import TokenCubeHandler
+from .scan import DeviceForwardingDelegate
+from .persistence import DataPersistence
+from .igrill import IGrillHandler
+from .tokencube import TokenCubeHandler
 
 device_settings = {
     "d4:81:ca:03:ab:80": {
@@ -25,7 +25,7 @@ INFLUX_USER = os.environ.get("INFLUX_USER", None) or "root"
 INFLUX_PASSWORD = os.environ.get("INFLUX_PASSWORD", None) or "root"
 
 if __name__ == "__main__":
-    print "Creating Scanner"
+    print("Creating Scanner")
     delegate = DeviceForwardingDelegate()
     delegate.handlers.append(IGrillHandler(device_settings))
     delegate.handlers.append(TokenCubeHandler(device_settings))
@@ -33,13 +33,13 @@ if __name__ == "__main__":
     scanner = Scanner()
     scanner.withDelegate(delegate)
 
-    print "Connecting to InfluxDB server"
+    print("Connecting to InfluxDB server")
     persistence = DataPersistence(INFLUX_SERVER, INFLUX_DATABASE, INFLUX_USER, INFLUX_PASSWORD)
 
     while True:
-        print "Scanning..."
+        print("Scanning...")
         scanner.scan(30)
 
-        print "Persisting..."
+        print("Persisting...")
         for handler in delegate.handlers:
             handler.persist_stats(persistence)

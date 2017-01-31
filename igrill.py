@@ -1,7 +1,7 @@
 import bluepy.btle as btle
 import random
 
-from crypto import encrypt, decrypt
+from .crypto import encrypt, decrypt
 
 class UUIDS:
     FIRMWARE_VERSION   = btle.UUID("64ac0001-4a4b-4b58-9f37-94d3c52ffdf7")
@@ -46,7 +46,7 @@ class IGrillHandler(object):
     def persist_stats(self, persistence):
         for dev in list(self.devices):
             settings = self.device_settings.get(dev.deviceAddr)
-            print "dev: ", dev, ", settings: ", settings
+            print("dev: ", dev, ", settings: ", settings)
             if settings == None:
                 settings = {
                     "device": "iGrill " + dev.deviceAddr,
@@ -59,7 +59,7 @@ class IGrillHandler(object):
                 temp = dev.read_temperature()
                 battery = dev.read_battery()
             except Exception as ex:
-                print "Error reading from ", dev.deviceAddr, ": ", ex, "removing device"
+                print("Error reading from ", dev.deviceAddr, ": ", ex, "removing device")
                 self.devices.remove(dev)
                 continue
 
@@ -69,7 +69,7 @@ class IGrillHandler(object):
                 persistence.save("sensordata", fields, settings)
                 persistence.save_battery_level(battery, **settings)
             except Exception as ex:
-                print "Error persisting stats,", ex, ", retrying next time"
+                print("Error persisting stats,", ex, ", retrying next time")
 
 
 class IDevicePeripheral(btle.Peripheral):
@@ -105,7 +105,7 @@ class IDevicePeripheral(btle.Peripheral):
         Performs iDevices challenge/response handshake. Returns if handshake succeeded
 
         """
-        print "Authenticating..."
+        print("Authenticating...")
         # encryption key used by igrill mini
         key = "".join([chr((256 + x) % 256) for x in self.encryption_key])
 
@@ -115,18 +115,18 @@ class IDevicePeripheral(btle.Peripheral):
 
         # read device challenge
         encrypted_device_challenge = self.characteristic(UUIDS.DEVICE_CHALLENGE).read()
-        print "encrypted device challenge:", str(encrypted_device_challenge).encode("hex")
+        print("encrypted device challenge:", str(encrypted_device_challenge).encode("hex"))
         device_challenge = decrypt(key, encrypted_device_challenge)
-        print "decrypted device challenge:", str(device_challenge).encode("hex")
+        print("decrypted device challenge:", str(device_challenge).encode("hex"))
 
         # verify device challenge
         if device_challenge[:8] != challenge[:8]:
-            print "Invalid device challenge"
+            print("Invalid device challenge")
             return False
 
         # send device response
         device_response = chr(0) * 8 + device_challenge[8:]
-        print "device response: ", str(device_response).encode("hex")
+        print("device response: ", str(device_response).encode("hex"))
         encrypted_device_response = encrypt(key, device_response)
         self.characteristic(UUIDS.DEVICE_RESPONSE).write(encrypted_device_response, True)
 
